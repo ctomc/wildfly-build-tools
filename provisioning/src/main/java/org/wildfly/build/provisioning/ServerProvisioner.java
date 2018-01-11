@@ -16,6 +16,29 @@
 
 package org.wildfly.build.provisioning;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import javax.xml.stream.XMLStreamException;
+
 import nu.xom.Attribute;
 import nu.xom.Document;
 import nu.xom.Element;
@@ -43,30 +66,6 @@ import org.wildfly.build.util.FileUtils;
 import org.wildfly.build.util.ModuleArtifactPropertyResolver;
 import org.wildfly.build.util.ModuleParseResult;
 import org.wildfly.build.util.ZipEntryInputStreamSource;
-
-import javax.xml.stream.XMLStreamException;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 /**
  * Task that builds a server from a set of features packs declared in the pack.
@@ -302,6 +301,9 @@ public class ServerProvisioner {
                             if (! repl.equals(orig)) {
                                 artifactName.getAttribute().setValue(repl);
                             }
+                            File artifactFile = artifactFileResolver.getArtifactFile(artifact);
+                            // extract schemas if needed
+                            extractSchema(schemaOutputDirectory, artifact, artifactFile);
                         } else {
                             // process the module artifact
                             File artifactFile = artifactFileResolver.getArtifactFile(artifact);
